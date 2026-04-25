@@ -16,9 +16,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FormularioPage(),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Colors.black,
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.tealAccent,
+        ),
+      ),
+      home: const FormularioPage(),
     );
   }
 }
@@ -88,12 +94,11 @@ class _FormularioPageState extends State<FormularioPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (_) => ListaUsuariosPage(
-              usuarios: usuarios,
-              onEdit: editarUsuario,
-              onDelete: eliminarUsuario,
-            ),
+        builder: (_) => ListaUsuariosPage(
+          usuarios: usuarios,
+          onEdit: editarUsuario,
+          onDelete: eliminarUsuario,
+        ),
       ),
     );
   }
@@ -103,13 +108,14 @@ class _FormularioPageState extends State<FormularioPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Formulario Flutter"),
+        backgroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.list),
+            icon: const Icon(Icons.list, color: Colors.tealAccent),
             onPressed: verUsuarios,
           ),
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: const Icon(Icons.save, color: Colors.tealAccent),
             onPressed: guardarDatos,
           ),
         ],
@@ -121,16 +127,25 @@ class _FormularioPageState extends State<FormularioPage> {
           child: Column(
             children: [
               const CircleAvatar(
-                radius: 40,
-                child: Icon(Icons.person, size: 40),
+                radius: 50,
+                backgroundImage: NetworkImage(
+                  "https://cdn-icons-png.flaticon.com/512/219/219986.png",
+                ),
               ),
               const SizedBox(height: 20),
 
               TextFormField(
                 controller: nombreController,
+                style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: "Nombre",
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.tealAccent),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.tealAccent),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.tealAccent),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -144,9 +159,16 @@ class _FormularioPageState extends State<FormularioPage> {
 
               TextFormField(
                 controller: correoController,
+                style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: "Correo",
-                  border: OutlineInputBorder(),
+                  labelStyle: TextStyle(color: Colors.tealAccent),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.tealAccent),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.tealAccent),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -159,8 +181,14 @@ class _FormularioPageState extends State<FormularioPage> {
               const SizedBox(height: 20),
 
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.tealAccent,
+                  foregroundColor: Colors.black,
+                ),
                 onPressed: guardarDatos,
-                child: Text(indexEditando == null ? "Guardar" : "Actualizar"),
+                child: Text(
+                  indexEditando == null ? "Guardar" : "Actualizar",
+                ),
               ),
             ],
           ),
@@ -185,35 +213,56 @@ class ListaUsuariosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Usuarios guardados")),
-      body:
-          usuarios.isEmpty
-              ? const Center(child: Text("No hay datos"))
-              : ListView.builder(
-                itemCount: usuarios.length,
-                itemBuilder: (context, index) {
-                  final user = usuarios[index];
+      appBar: AppBar(
+        title: const Text("Usuarios guardados"),
+        backgroundColor: Colors.black,
+      ),
+      body: usuarios.isEmpty
+          ? const Center(
+              child: Text(
+                "No hay datos",
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          : ListView.builder(
+              itemCount: usuarios.length,
+              itemBuilder: (context, index) {
+                final user = usuarios[index];
 
-                  return ListTile(
-                    leading: const Icon(Icons.person),
-                    title: Text(user.nombre),
-                    subtitle: Text(user.correo),
+                return Card(
+                  color: Colors.grey[900],
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.person,
+                      color: Colors.tealAccent,
+                    ),
+                    title: Text(
+                      user.nombre,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      user.correo,
+                      style: const TextStyle(color: Colors.white70),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.edit),
+                          icon: const Icon(Icons.edit,
+                              color: Colors.tealAccent),
                           onPressed: () => onEdit(index),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete),
+                          icon:
+                              const Icon(Icons.delete, color: Colors.redAccent),
                           onPressed: () => onDelete(index),
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
