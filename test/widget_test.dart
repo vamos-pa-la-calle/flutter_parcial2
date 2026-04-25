@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_application_1/main.dart';
+import 'package:flutter_materialapp/main.dart';
 
 void main() {
-  testWidgets('Agregar tarea funciona correctamente', (
+  testWidgets('Crear y visualizar usuario en lista', (
     WidgetTester tester,
   ) async {
-    // Cargar la app
-    await tester.pumpWidget(MiApp());
+    // Cargar app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verificar que el campo de texto existe
-    expect(find.byType(TextField), findsOneWidget);
+    // Escribir en formulario
+    final fields = find.byType(TextFormField);
+    expect(fields, findsNWidgets(2));
 
-    // Escribir una tarea
-    await tester.enterText(find.byType(TextField), 'Comprar pan');
+    await tester.enterText(fields.at(0), 'Juan');
+    await tester.enterText(fields.at(1), 'juan@email.com');
 
-    // Presionar el botón "Agregar"
-    await tester.tap(find.text('Agregar'));
     await tester.pump();
 
-    // Verificar que la tarea aparece en pantalla
-    expect(find.text('Comprar pan'), findsOneWidget);
+    // Guardar usuario (botón en AppBar)
+    await tester.tap(find.byIcon(Icons.save));
+    await tester.pumpAndSettle();
+
+    // Abrir lista de usuarios
+    await tester.tap(find.byIcon(Icons.list));
+    await tester.pumpAndSettle();
+
+    // Verificar que aparece el usuario
+    expect(find.text('Juan'), findsOneWidget);
+    expect(find.text('juan@email.com'), findsOneWidget);
   });
 }

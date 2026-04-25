@@ -1,75 +1,100 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MiApp());
+  runApp(const MyApp());
 }
 
-class MiApp extends StatelessWidget {
+class Usuario {
+  String nombre;
+  String correo;
+
+  Usuario({required this.nombre, required this.correo});
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Lista de Tareas',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: HomePage(),
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
+      home: FormularioPage(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
+class FormularioPage extends StatefulWidget {
+  const FormularioPage({super.key});
+
   @override
-  _HomePageState createState() => _HomePageState();
+  State<FormularioPage> createState() => _FormularioPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  List<String> tareas = [];
-  TextEditingController controlador = TextEditingController();
+class _FormularioPageState extends State<FormularioPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void agregarTarea() {
-    if (controlador.text.isNotEmpty) {
+  final TextEditingController nombreController = TextEditingController();
+  final TextEditingController correoController = TextEditingController();
+
+  List<Usuario> usuarios = [];
+
+  int? indexEditando;
+
+  void guardarDatos() {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        tareas.add(controlador.text);
-        controlador.clear();
+        if (indexEditando == null) {
+          usuarios.add(
+            Usuario(
+              nombre: nombreController.text,
+              correo: correoController.text,
+            ),
+          );
+        } else {
+          usuarios[indexEditando!] = Usuario(
+            nombre: nombreController.text,
+            correo: correoController.text,
+          );
+          indexEditando = null;
+        }
       });
+
+      nombreController.clear();
+      correoController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Datos guardados")),
+      );
     }
   }
 
-  void eliminarTarea(int index) {
+  void editarUsuario(int index) {
     setState(() {
-      tareas.removeAt(index);
+      nombreController.text = usuarios[index].nombre;
+      correoController.text = usuarios[index].correo;
+      indexEditando = index;
+    });
+
+    Navigator.pop(context);
+  }
+
+  void eliminarUsuario(int index) {
+    setState(() {
+      usuarios.removeAt(index);
     });
   }
 
-  void editarTarea(int index) {
-    TextEditingController editarController =
-        TextEditingController(text: tareas[index]);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Editar tarea'),
-          content: TextField(
-            controller: editarController,
-            decoration: InputDecoration(hintText: 'Editar texto'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+  void verUsuarios() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => ListaUsuariosPage(
+              usuarios: usuarios,
+              onEdit: editarUsuario,
+              onDelete: eliminarUsuario,
             ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  tareas[index] = editarController.text;
-                });
-                Navigator.pop(context);
-              },
-              child: Text('Guardar'),
-            ),
-          ],
-        );
-      },
+      ),
     );
   }
 
@@ -77,48 +102,118 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mi Lista de Tareas'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controlador,
-                    decoration: InputDecoration(
-                      hintText: 'Escribe una tarea',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: agregarTarea,
-                  child: Text('Agregar'),
-                ),
-              ],
-            ),
+        title: const Text("Formulario Flutter"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: verUsuarios,
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: tareas.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(tareas[index]),
-                  onTap: () => editarTarea(index), // 👈 tocar para editar
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => eliminarTarea(index),
-                  ),
-                );
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: guardarDatos,
           ),
         ],
       ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                child: Icon(Icons.person, size: 40),
+              ),
+              const SizedBox(height: 20),
+
+              TextFormField(
+                controller: nombreController,
+                decoration: const InputDecoration(
+                  labelText: "Nombre",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Ingrese su nombre";
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 15),
+
+              TextFormField(
+                controller: correoController,
+                decoration: const InputDecoration(
+                  labelText: "Correo",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Ingrese su correo";
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: guardarDatos,
+                child: Text(indexEditando == null ? "Guardar" : "Actualizar"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ListaUsuariosPage extends StatelessWidget {
+  final List<Usuario> usuarios;
+  final Function(int) onEdit;
+  final Function(int) onDelete;
+
+  const ListaUsuariosPage({
+    super.key,
+    required this.usuarios,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Usuarios guardados")),
+      body:
+          usuarios.isEmpty
+              ? const Center(child: Text("No hay datos"))
+              : ListView.builder(
+                itemCount: usuarios.length,
+                itemBuilder: (context, index) {
+                  final user = usuarios[index];
+
+                  return ListTile(
+                    leading: const Icon(Icons.person),
+                    title: Text(user.nombre),
+                    subtitle: Text(user.correo),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => onEdit(index),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => onDelete(index),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
     );
   }
 }
